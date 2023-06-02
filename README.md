@@ -7,8 +7,8 @@ This repo contains code that will deploy scalable APIs for Open Source LLMs on K
 ## Deploy in AWS
 
 You need a Kubernetes cluster and `kubectl` set up to be able to access that cluster. On AWS, we use Amazon Elastic Kubernetes Service (Amazon EKS) for this. 
-- Please refer to the [Amazon EKS](https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html) on how to set things up
-- Make sure you can [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html) installed and configured as well
+- Please refer to the [Amazon EKS]documentation (https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html) on how to set things up
+- Make sure you have [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html) installed and configured as well
 
 Also, make sure [Docker](https://docs.docker.com/engine/install/) is installed and running in your environment
 
