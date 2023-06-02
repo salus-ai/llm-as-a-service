@@ -1,4 +1,4 @@
-# LLM-SaaS ☁️🚀
+# LLM-as-a-Service ☁️🚀
 
 This repo contains code that will deploy scalable APIs for Open Source LLMs on Kubernetes.
 
