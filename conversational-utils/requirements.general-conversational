@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+torch
+transformers
+boto3
+accelerate
+einops

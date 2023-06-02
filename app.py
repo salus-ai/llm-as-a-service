@@ -1,0 +1,262 @@
+import streamlit as st
+import subprocess
+import threading
+import queue
+import time
+
+def stream_command(command):
+    q_stdout = queue.Queue()
+    q_stderr = queue.Queue()
+
+    def _stream_command(command, q_stdout, q_stderr):
+        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+        while True:
+            output = process.stdout.readline()
+            if output:
+                q_stdout.put(output.strip())
+            error = process.stderr.readline()
+            if error:
+                q_stderr.put(error.strip())
+            if output == b'' and error == b'' and process.poll() is not None:
+                break
+        process.poll()
+
+    thread = threading.Thread(target=_stream_command, args=(command, q_stdout, q_stderr))
+    thread.start()
+
+    # st.write('Command output:')
+    log = st.empty()
+    while thread.is_alive() or not q_stdout.empty() or not q_stderr.empty():
+        while not q_stdout.empty():
+            log.write(q_stdout.get().decode())
+        while not q_stderr.empty():
+            log.warning(q_stderr.get().decode()) # warnings are displayed in red in Streamlit
+        time.sleep(0.1)
+
+def run_script(script_path):
+    result = subprocess.Popen(['bash', script_path])
+
+    # you can also wait for the script to finish with:
+    result.wait()
+
+st.title("Paradigm LLM Deploy Service ☁️🚀")
+
+with st.expander("Text Generation"):
+    model_tg_original = st.selectbox(
+    'Choose Model',
+    ('EleutherAI/pythia-12b', 'EleutherAI/pythia-70m'),
+    key="tg-model")
+
+    model_tg_original_mod = model_tg_original.replace("/", "\/" )
+
+    # model_tg = model_tg_original.replace("/", "-" )
+    model_tg = model_tg_original.split('/')[1]
+    model_tg = model_tg.replace(".", "-" )
+    model_tg = model_tg.lower()
+    model_tg = (model_tg[:45]) if len(model_tg) > 45 else model_tg
+
+    model_version_tg = st.radio(
+    "Choose Model Version",
+    ('Base', 'Finetuned'),
+    key='mv-tg')
+
+    if model_version_tg == 'Base':
+        download_base = st.checkbox('Download base', key='dl-base-tg')
+        model_version_tg_input = 'base'
+
+    if model_version_tg == 'Finetuned':
+        model_version_tg_input = st.text_input('Enter fintuned model version', key='ftm-version-tg')
+
+    memory_requested = st.number_input('Request memory (Gi)', min_value=2, max_value=1000, key='momery-tg')
+
+    if st.button("Deploy", key="deploy-tg"):
+        if model_version_tg == 'Base':
+            if download_base:
+                with st.spinner('Unleashing the agents...'):
+                    bash_commands = []
+                    bash_commands.append("rm -r last-deployed-scripts")
+                    bash_commands.append("mkdir last-deployed-scripts")
+                    bash_commands.append("cp text-generation-utils/general-download-base.py last-deployed-scripts/general-download-base.py")
+                    bash_commands.append("cp text-generation-utils/general-text-generation.py last-deployed-scripts/general-text-generation.py")
+                    bash_commands.append("cp text-generation-utils/requirements.general-download-base last-deployed-scripts/requirements.general-download-base")
+                    bash_commands.append("cp text-generation-utils/requirements.general-text-generation last-deployed-scripts/requirements.general-text-generation")
+
+                    bash_commands.append("cd last-deployed-scripts")
+                    bash_commands.append(f"mv general-download-base.py {model_tg}-download-base.py")
+                    bash_commands.append(f"mv general-text-generation.py {model_tg}-text-generation.py")
+                    bash_commands.append(f"mv requirements.general-download-base requirements.{model_tg}-download-base")
+                    bash_commands.append(f"mv requirements.general-text-generation requirements.{model_tg}-text-generation")
+
+                    bash_commands.append(f"sed -i 's/<MODELNAME>/{model_tg_original_mod}/g' {model_tg}-download-base.py")
+                    bash_commands.append(f"sed -i 's/<MODELNAME>/{model_tg_original_mod}/g' {model_tg}-text-generation.py")
+                    bash_commands.append(f"sed -i 's/<MODELVERSION>/{model_version_tg_input}/g' {model_tg}-text-generation.py")
+                    
+                    bash_commands.append(f"paradigm launch --steps {model_tg}-download-base {model_tg}-text-generation")
+
+                    bash_commands.append(f'paradigm deploy --steps {model_tg}-download-base --dependencies "{model_tg}-text-generation:{model_tg}-download-base" --deployment {model_tg}-text-generation --deployment_port 8000 --deployment_memory {int(memory_requested)}Gi')
+
+                    with open('latest_instructions.sh', 'w') as f:
+                        for item in bash_commands:
+                            f.write(f"{item}\n")
+                    
+                    run_script("latest_instructions.sh")
+
+            else:
+                with st.spinner('Unleashing the agents..'):
+                    bash_commands = []
+                    bash_commands.append("rm -r last-deployed-scripts")
+                    bash_commands.append("mkdir last-deployed-scripts")
+                    bash_commands.append("cp text-generation-utils/general-text-generation.py last-deployed-scripts/general-text-generation.py")
+                    bash_commands.append("cp text-generation-utils/requirements.general-text-generation last-deployed-scripts/requirements.general-text-generation")
+
+                    bash_commands.append("cd last-deployed-scripts")
+                    bash_commands.append(f"mv general-text-generation.py {model_tg}-text-generation.py")
+                    bash_commands.append(f"mv requirements.general-text-generation requirements.{model_tg}-text-generation")
+
+                    bash_commands.append(f"sed -i 's/<MODELNAME>/{model_tg_original_mod}/g' {model_tg}-text-generation.py")
+                    bash_commands.append(f"sed -i 's/<MODELVERSION>/{model_version_tg_input}/g' {model_tg}-text-generation.py")
+                
+                    bash_commands.append(f"paradigm launch --steps {model_tg}-text-generation")
+                    bash_commands.append(f"paradigm deploy --deployment {model_tg}-text-generation --deployment_port 8000 --deployment_memory {int(memory_requested)}Gi")
+
+                    with open('latest_instructions.sh', 'w') as f:
+                        for item in bash_commands:
+                            f.write(f"{item}\n")
+                    
+                    run_script("latest_instructions.sh")
+
+        elif model_version_tg == 'Finetuned':
+            with st.spinner('Unleashing the agents..'):
+                bash_commands = []
+                bash_commands.append("rm -r last-deployed-scripts")
+                bash_commands.append("mkdir last-deployed-scripts")
+                bash_commands.append("cp text-generation-utils/general-text-generation.py last-deployed-scripts/general-text-generation.py")
+                bash_commands.append("cp text-generation-utils/requirements.general-text-generation last-deployed-scripts/requirements.general-text-generation")
+
+                bash_commands.append("cd last-deployed-scripts")
+                bash_commands.append(f"mv general-text-generation.py {model_tg}-text-generation.py")
+                bash_commands.append(f"mv requirements.general-text-generation requirements.{model_tg}-text-generation")
+
+                bash_commands.append(f"sed -i 's/<MODELNAME>/{model_tg_original_mod}/g' {model_tg}-text-generation.py")
+                bash_commands.append(f"sed -i 's/<MODELVERSION>/{model_version_tg_input}/g' {model_tg}-text-generation.py")
+            
+                bash_commands.append(f"paradigm launch --steps {model_tg}-text-generation")
+                bash_commands.append(f"paradigm deploy --deployment {model_tg}-text-generation --deployment_port 8000 --deployment_memory {int(memory_requested)}Gi")
+
+                with open('latest_instructions.sh', 'w') as f:
+                    for item in bash_commands:
+                        f.write(f"{item}\n")
+                
+                run_script("latest_instructions.sh")
+
+
+
+with st.expander("Conversational"):
+    model_con_original = st.selectbox(
+    'Choose Model',
+    ('OpenAssistant/oasst-sft-4-pythia-12b-epoch-3.5','tiiuae/falcon-40b-instruct', 'tiiuae/falcon-7b-instruct', 'mosaicml/mpt-7b-instruct',
+            'mosaicml/mpt-7b-chat', 'databricks/dolly-v2-12b'),
+    key="con-model")
+
+    model_con_original_mod = model_con_original.replace("/", "\/" )
+
+    # model_con = model_con_original.replace("/", "-" )
+    model_con = model_con_original.split('/')[1]
+    model_con = model_con.replace(".", "-" )
+    model_con = model_con.lower()
+    model_con = (model_con[:45]) if len(model_con) > 45 else model_con
+
+    model_version_con = st.radio(
+    "Choose Model Version",
+    ('Base', 'Finetuned'),
+    key='mv-con')
+
+    if model_version_con == 'Base':
+        download_base = st.checkbox('Download base', key='dl-base-con')
+        model_version_con_input = 'base'
+
+    if model_version_con == 'Finetuned':
+        model_version_con_input = st.text_input('Enter fintuned model version', key='ftm-version-con')
+
+    memory_requested = st.number_input('Request memory (Gi)', min_value=2, max_value=1000, key='momery-con')
+
+    if st.button("Deploy", key="deploy-con"):
+        if model_version_con == 'Base':
+            if download_base:
+                with st.spinner('Unleashing the agents...'):
+                    bash_commands = []
+                    bash_commands.append("rm -r last-deployed-scripts")
+                    bash_commands.append("mkdir last-deployed-scripts")
+                    bash_commands.append("cp conversational-utils/general-download-base.py last-deployed-scripts/general-download-base.py")
+                    bash_commands.append("cp conversational-utils/general-conversational.py last-deployed-scripts/general-conversational.py")
+                    bash_commands.append("cp conversational-utils/requirements.general-download-base last-deployed-scripts/requirements.general-download-base")
+                    bash_commands.append("cp conversational-utils/requirements.general-conversational last-deployed-scripts/requirements.general-conversational")
+
+                    bash_commands.append("cd last-deployed-scripts")
+                    bash_commands.append(f"mv general-download-base.py {model_con}-download-base.py")
+                    bash_commands.append(f"mv general-conversational.py {model_con}-conversational.py")
+                    bash_commands.append(f"mv requirements.general-download-base requirements.{model_con}-download-base")
+                    bash_commands.append(f"mv requirements.general-conversational requirements.{model_con}-conversational")
+
+                    bash_commands.append(f"sed -i 's/<MODELNAME>/{model_con_original_mod}/g' {model_con}-download-base.py")
+                    bash_commands.append(f"sed -i 's/<MODELNAME>/{model_con_original_mod}/g' {model_con}-conversational.py")
+                    bash_commands.append(f"sed -i 's/<MODELVERSION>/{model_version_con_input}/g' {model_con}-conversational.py")
+                    
+                    bash_commands.append(f"paradigm launch --steps {model_con}-download-base {model_con}-conversational")
+
+                    bash_commands.append(f'paradigm deploy --steps {model_con}-download-base --dependencies "{model_con}-conversational:{model_con}-download-base" --deployment {model_con}-conversational --deployment_port 8000 --deployment_memory {int(memory_requested)}Gi')
+
+                    with open('latest_instructions.sh', 'w') as f:
+                        for item in bash_commands:
+                            f.write(f"{item}\n")
+                    
+                    run_script("latest_instructions.sh")
+
+            else:
+                with st.spinner('Unleashing the agents..'):
+                    bash_commands = []
+                    bash_commands.append("rm -r last-deployed-scripts")
+                    bash_commands.append("mkdir last-deployed-scripts")
+                    bash_commands.append("cp conversational-utils/general-conversational.py last-deployed-scripts/general-conversational.py")
+                    bash_commands.append("cp conversational-utils/requirements.general-conversational last-deployed-scripts/requirements.general-conversational")
+
+                    bash_commands.append("cd last-deployed-scripts")
+                    bash_commands.append(f"mv general-conversational.py {model_con}-conversational.py")
+                    bash_commands.append(f"mv requirements.general-conversational requirements.{model_con}-conversational")
+
+                    bash_commands.append(f"sed -i 's/<MODELNAME>/{model_con_original_mod}/g' {model_con}-conversational.py")
+                    bash_commands.append(f"sed -i 's/<MODELVERSION>/{model_version_con_input}/g' {model_con}-conversational.py")
+                
+                    bash_commands.append(f"paradigm launch --steps {model_con}-conversational")
+                    bash_commands.append(f"paradigm deploy --deployment {model_con}-conversational --deployment_port 8000 --deployment_memory {int(memory_requested)}Gi")
+
+                    with open('latest_instructions.sh', 'w') as f:
+                        for item in bash_commands:
+                            f.write(f"{item}\n")
+                    
+                    run_script("latest_instructions.sh")
+
+        elif model_version_con == 'Finetuned':
+            with st.spinner('Unleashing the agents..'):
+                bash_commands = []
+                bash_commands.append("rm -r last-deployed-scripts")
+                bash_commands.append("mkdir last-deployed-scripts")
+                bash_commands.append("cp conversational-utils/general-conversational.py last-deployed-scripts/general-conversational.py")
+                bash_commands.append("cp conversational-utils/requirements.general-conversational last-deployed-scripts/requirements.general-conversational")
+
+                bash_commands.append("cd last-deployed-scripts")
+                bash_commands.append(f"mv general-conversational.py {model_con}-conversational.py")
+                bash_commands.append(f"mv requirements.general-conversational requirements.{model_con}-conversational")
+
+                bash_commands.append(f"sed -i 's/<MODELNAME>/{model_con_original_mod}/g' {model_con}-conversational.py")
+                bash_commands.append(f"sed -i 's/<MODELVERSION>/{model_version_con_input}/g' {model_con}-conversational.py")
+            
+                bash_commands.append(f"paradigm launch --steps {model_con}-conversational")
+                bash_commands.append(f"paradigm deploy --deployment {model_con}-conversational --deployment_port 8000 --deployment_memory {int(memory_requested)}Gi")
+
+                with open('latest_instructions.sh', 'w') as f:
+                    for item in bash_commands:
+                        f.write(f"{item}\n")
+                
+                run_script("latest_instructions.sh")
