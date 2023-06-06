@@ -103,8 +103,8 @@ with st.expander("Text Generation"):
                             f.write(f"{item}\n")
                     
                     logs = run_script("latest_instructions.sh")
-                    deployment_name = logs.split('deployment.apps/')[1].split(' ')[0]
-                    print(f"***Deployment found - {deployment_name}")
+                    # deployment_name = logs.split('deployment.apps/')[1].split(' ')[0]
+                    # print(f"***Deployment found - {deployment_name}")
 
             else:
                 with st.spinner('Unleashing the agents..'):
@@ -129,8 +129,8 @@ with st.expander("Text Generation"):
                             f.write(f"{item}\n")
                     
                     logs = run_script("latest_instructions.sh")
-                    deployment_name = logs.split('deployment.apps/')[1].split(' ')[0]
-                    print(f"***Deployment found - {deployment_name}")
+                    # deployment_name = logs.split('deployment.apps/')[1].split(' ')[0]
+                    # print(f"***Deployment found - {deployment_name}")
 
         elif model_version_tg == 'Finetuned':
             with st.spinner('Unleashing the agents..'):
@@ -155,8 +155,8 @@ with st.expander("Text Generation"):
                         f.write(f"{item}\n")
                 
                 logs = run_script("latest_instructions.sh")
-                deployment_name = logs.split('deployment.apps/')[1].split(' ')[0]
-                print(f"***Deployment found - {deployment_name}")
+                # deployment_name = logs.split('deployment.apps/')[1].split(' ')[0]
+                # print(f"***Deployment found - {deployment_name}")
 
 
 
@@ -220,8 +220,8 @@ with st.expander("Conversational"):
                             f.write(f"{item}\n")
                     
                     logs = run_script("latest_instructions.sh")
-                    deployment_name = logs.split('deployment.apps/')[1].split(' ')[0]
-                    print(f"***Deployment found - {deployment_name}")
+                    # deployment_name = logs.split('deployment.apps/')[1].split(' ')[0]
+                    # print(f"***Deployment found - {deployment_name}")
 
             else:
                 with st.spinner('Unleashing the agents..'):
@@ -246,8 +246,8 @@ with st.expander("Conversational"):
                             f.write(f"{item}\n")
                     
                     logs = run_script("latest_instructions.sh")
-                    deployment_name = logs.split('deployment.apps/')[1].split(' ')[0]
-                    print(f"***Deployment found - {deployment_name}")
+                    # deployment_name = logs.split('deployment.apps/')[1].split(' ')[0]
+                    # print(f"***Deployment found - {deployment_name}")
 
         elif model_version_con == 'Finetuned':
             with st.spinner('Unleashing the agents..'):
@@ -272,5 +272,5 @@ with st.expander("Conversational"):
                         f.write(f"{item}\n")
                 
                 logs = run_script("latest_instructions.sh")
-                deployment_name = logs.split('deployment.apps/')[1].split(' ')[0]
-                print(f"***Deployment found - {deployment_name}")
+                # deployment_name = logs.split('deployment.apps/')[1].split(' ')[0]
+                # print(f"***Deployment found - {deployment_name}")
