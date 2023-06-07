@@ -86,12 +86,12 @@ with st.expander("Text Generation"):
     if model_version_tg == 'Finetuned':
 
         folders = list_folders('paradigm-llm-models', model_tg_original + '/')
-        print(f"Folders = {folders}")
+        # print(f"Folders = {folders}")
         folders = [i for i in folders if 'finetune' in i]
         folders_filtered = []
         for f in folders:
             folders_filtered.append(f.split(model_tg_original)[1].split('/')[1])
-        print(f"Folders = {folders_filtered}")
+        # print(f"Folders = {folders_filtered}")
         model_version_tg_input = st.selectbox(
             'Choose Finetuned Model',
             folders_filtered,
@@ -215,12 +215,12 @@ with st.expander("Conversational"):
 
     if model_version_con == 'Finetuned':
         folders = list_folders('paradigm-llm-models', model_con_original + '/')
-        print(f"Folders = {folders}")
+        # print(f"Folders = {folders}")
         folders = [i for i in folders if 'finetune' in i]
         folders_filtered = []
         for f in folders:
             folders_filtered.append(f.split(model_con_original)[1].split('/')[1])
-        print(f"Folders = {folders_filtered}")
+        # print(f"Folders = {folders_filtered}")
         model_version_con_input = st.selectbox(
             'Choose Finetuned Model',
             folders_filtered,
