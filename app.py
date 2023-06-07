@@ -102,7 +102,7 @@ with st.expander("Text Generation"):
                         for item in bash_commands:
                             f.write(f"{item}\n")
                     
-                    logs = run_script("latest_instructions.sh")
+                    run_script("latest_instructions.sh")
                     # deployment_name = logs.split('deployment.apps/')[1].split(' ')[0]
                     # print(f"***Deployment found - {deployment_name}")
 
@@ -128,7 +128,7 @@ with st.expander("Text Generation"):
                         for item in bash_commands:
                             f.write(f"{item}\n")
                     
-                    logs = run_script("latest_instructions.sh")
+                    run_script("latest_instructions.sh")
                     # deployment_name = logs.split('deployment.apps/')[1].split(' ')[0]
                     # print(f"***Deployment found - {deployment_name}")
 
@@ -154,7 +154,7 @@ with st.expander("Text Generation"):
                     for item in bash_commands:
                         f.write(f"{item}\n")
                 
-                logs = run_script("latest_instructions.sh")
+                run_script("latest_instructions.sh")
                 # deployment_name = logs.split('deployment.apps/')[1].split(' ')[0]
                 # print(f"***Deployment found - {deployment_name}")
 
@@ -219,7 +219,7 @@ with st.expander("Conversational"):
                         for item in bash_commands:
                             f.write(f"{item}\n")
                     
-                    logs = run_script("latest_instructions.sh")
+                    run_script("latest_instructions.sh")
                     # deployment_name = logs.split('deployment.apps/')[1].split(' ')[0]
                     # print(f"***Deployment found - {deployment_name}")
 
@@ -245,7 +245,7 @@ with st.expander("Conversational"):
                         for item in bash_commands:
                             f.write(f"{item}\n")
                     
-                    logs = run_script("latest_instructions.sh")
+                    run_script("latest_instructions.sh")
                     # deployment_name = logs.split('deployment.apps/')[1].split(' ')[0]
                     # print(f"***Deployment found - {deployment_name}")
 
@@ -271,6 +271,6 @@ with st.expander("Conversational"):
                     for item in bash_commands:
                         f.write(f"{item}\n")
                 
-                logs = run_script("latest_instructions.sh")
+                run_script("latest_instructions.sh")
                 # deployment_name = logs.split('deployment.apps/')[1].split(' ')[0]
                 # print(f"***Deployment found - {deployment_name}")
