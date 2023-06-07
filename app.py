@@ -58,7 +58,7 @@ def run_script(script_path):
 
     return result
 
-st.title("Paradigm LLM Deploy Service ☁️🚀")
+st.title("LLM as a Service ☁️🚀")
 
 with st.expander("Text Generation"):
     model_tg_original = st.selectbox(
