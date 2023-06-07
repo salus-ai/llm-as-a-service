@@ -221,7 +221,7 @@ with st.expander("Conversational"):
         for f in folders:
             folders_filtered.append(f.split(model_con_original)[1].split('/')[1])
         print(f"Folders = {folders_filtered}")
-        model_version_tg_input = st.selectbox(
+        model_version_con_input = st.selectbox(
             'Choose Finetuned Model',
             folders_filtered,
             key="ftm-version-con")
