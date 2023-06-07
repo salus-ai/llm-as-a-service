@@ -69,3 +69,15 @@ paradigm-pipeline-zwxmk-get-ip-2528837520: Waiting for end point...
 paradigm-pipeline-zwxmk-get-ip-2528837520: End point: <LOAD_BALANCER_IP>
 paradigm-pipeline-zwxmk-get-ip-2528837520: time="2023-06-02T04:50:52.868Z" level=info msg="sub-process exited" argo=true error="<nil>"
 ```
+
+To stop the deployed API and release resources, execute the following commands with the deployment name found in the terminal logs
+
+According to the example above;
+- Delete deployment
+```
+kubectl delete deployment deploy-falcon-7b-instruct-conversational -n paradigm
+```
+- Delete Service
+```
+kubectl service deployment deploy-falcon-7b-instruct-conversational -n paradigm
+```
