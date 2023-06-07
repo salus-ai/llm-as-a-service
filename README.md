@@ -79,5 +79,5 @@ kubectl delete deployment deploy-falcon-7b-instruct-conversational -n paradigm
 ```
 - Delete Service
 ```
-kubectl service deployment deploy-falcon-7b-instruct-conversational -n paradigm
+kubectl delete service deploy-falcon-7b-instruct-conversational -n paradigm
 ```
