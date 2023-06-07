@@ -3,6 +3,22 @@ import subprocess
 import threading
 import queue
 import time
+import boto3
+
+def list_folders(bucket_name, parent_folder):
+    s3 = boto3.client('s3')
+    response = s3.list_objects_v2(
+        Bucket=bucket_name,
+        Prefix=parent_folder,
+        Delimiter='/'
+    )
+
+    folders = []
+    for content in response.get('CommonPrefixes', []):
+        folders.append(content.get('Prefix'))
+
+    return folders
+
 
 def stream_command(command):
     q_stdout = queue.Queue()
@@ -68,7 +84,20 @@ with st.expander("Text Generation"):
         model_version_tg_input = 'base'
 
     if model_version_tg == 'Finetuned':
-        model_version_tg_input = st.text_input('Enter fintuned model version', key='ftm-version-tg')
+
+        folders = list_folders('paradigm-llm-models', model_tg_original + '/')
+        print(f"Folders = {folders}")
+        folders = [i for i in folders if 'finetune' in i]
+        folders_filtered = []
+        for f in folders:
+            folders_filtered.append(f.split(model_tg_original)[1].split('/')[1])
+        print(f"Folders = {folders_filtered}")
+        model_version_tg_input = st.selectbox(
+            'Choose Finetuned Model',
+            folders_filtered,
+            key="ftm-version-tg")
+
+        # model_version_tg_input = st.text_input('Enter fintuned model version', key='ftm-version-tg')
 
     memory_requested = st.number_input('Request memory (Gi)', min_value=2, max_value=1000, key='momery-tg')
 
@@ -185,7 +214,17 @@ with st.expander("Conversational"):
         model_version_con_input = 'base'
 
     if model_version_con == 'Finetuned':
-        model_version_con_input = st.text_input('Enter fintuned model version', key='ftm-version-con')
+        folders = list_folders('paradigm-llm-models', model_con_original + '/')
+        print(f"Folders = {folders}")
+        folders = [i for i in folders if 'finetune' in i]
+        folders_filtered = []
+        for f in folders:
+            folders_filtered.append(f.split(model_con_original)[1].split('/')[1])
+        print(f"Folders = {folders_filtered}")
+        model_version_tg_input = st.selectbox(
+            'Choose Finetuned Model',
+            folders_filtered,
+            key="ftm-version-con")
 
     memory_requested = st.number_input('Request memory (Gi)', min_value=2, max_value=1000, key='momery-con')
 
