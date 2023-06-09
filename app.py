@@ -313,3 +313,125 @@ with st.expander("Conversational"):
                 run_script("latest_instructions.sh")
                 # deployment_name = logs.split('deployment.apps/')[1].split(' ')[0]
                 # print(f"***Deployment found - {deployment_name}")
+
+with st.expander("Code Completion"):
+    model_code_original = st.selectbox(
+    'Choose Model',
+    ('bigcode/starcoder',),
+    key="code-model")
+
+    model_code_original_mod = model_code_original.replace("/", "\/" )
+
+    # model_code = model_code_original.replace("/", "-" )
+    model_code = model_code_original.split('/')[1]
+    model_code = model_code.replace(".", "-" )
+    model_code = model_code.lower()
+    model_code = (model_code[:45]) if len(model_code) > 45 else model_code
+
+    model_version_code = st.radio(
+    "Choose Model Version",
+    ('Base', 'Finetuned'),
+    key='mv-code')
+
+    if model_version_code == 'Base':
+        download_base = st.checkbox('Download base', key='dl-base-code')
+        model_version_code_input = 'base'
+
+    if model_version_code == 'Finetuned':
+        folders = list_folders('paradigm-llm-models', model_code_original + '/')
+        # print(f"Folders = {folders}")
+        folders = [i for i in folders if 'finetune' in i]
+        folders_filtered = []
+        for f in folders:
+            folders_filtered.append(f.split(model_code_original)[1].split('/')[1])
+        # print(f"Folders = {folders_filtered}")
+        model_version_code_input = st.selectbox(
+            'Choose Finetuned Model',
+            folders_filtered,
+            key="ftm-version-code")
+
+    memory_requested = st.number_input('Request memory (Gi)', min_value=2, max_value=1000, key='momery-code')
+
+    if st.button("Deploy", key="deploy-code"):
+        if model_version_code == 'Base':
+            if download_base:
+                with st.spinner('Unleashing the agents...'):
+                    bash_commands = []
+                    bash_commands.append("rm -r last-deployed-scripts")
+                    bash_commands.append("mkdir last-deployed-scripts")
+                    bash_commands.append("cp code-completion-utils/general-download-base.py last-deployed-scripts/general-download-base.py")
+                    bash_commands.append("cp code-completion-utils/general-code-completion.py last-deployed-scripts/general-code-completion.py")
+                    bash_commands.append("cp code-completion-utils/requirements.general-download-base last-deployed-scripts/requirements.general-download-base")
+                    bash_commands.append("cp code-completion-utils/requirements.general-code-completion last-deployed-scripts/requirements.general-code-completion")
+
+                    bash_commands.append("cd last-deployed-scripts")
+                    bash_commands.append(f"mv general-download-base.py {model_code}-download-base.py")
+                    bash_commands.append(f"mv general-code-completion.py {model_code}-code-completion.py")
+                    bash_commands.append(f"mv requirements.general-download-base requirements.{model_code}-download-base")
+                    bash_commands.append(f"mv requirements.general-code-completion requirements.{model_code}-code-completion")
+
+                    bash_commands.append(f"sed -i 's/<MODELNAME>/{model_code_original_mod}/g' {model_code}-download-base.py")
+                    bash_commands.append(f"sed -i 's/<MODELNAME>/{model_code_original_mod}/g' {model_code}-code-completion.py")
+                    bash_commands.append(f"sed -i 's/<MODELVERSION>/{model_version_code_input}/g' {model_code}-code-completion.py")
+                    
+                    bash_commands.append(f"paradigm launch --steps {model_code}-download-base {model_code}-code-completion")
+
+                    bash_commands.append(f'paradigm deploy --steps {model_code}-download-base --dependencies "{model_code}-code-completion:{model_code}-download-base" --deployment {model_code}-code-completion --deployment_port 8000 --deployment_memory {int(memory_requested)}Gi')
+
+                    with open('latest_instructions.sh', 'w') as f:
+                        for item in bash_commands:
+                            f.write(f"{item}\n")
+                    
+                    run_script("latest_instructions.sh")
+                    # deployment_name = logs.split('deployment.apps/')[1].split(' ')[0]
+                    # print(f"***Deployment found - {deployment_name}")
+
+            else:
+                with st.spinner('Unleashing the agents..'):
+                    bash_commands = []
+                    bash_commands.append("rm -r last-deployed-scripts")
+                    bash_commands.append("mkdir last-deployed-scripts")
+                    bash_commands.append("cp code-completion-utils/general-code-completion.py last-deployed-scripts/general-code-completion.py")
+                    bash_commands.append("cp code-completion-utils/requirements.general-code-completion last-deployed-scripts/requirements.general-code-completion")
+
+                    bash_commands.append("cd last-deployed-scripts")
+                    bash_commands.append(f"mv general-code-completion.py {model_code}-code-completion.py")
+                    bash_commands.append(f"mv requirements.general-code-completion requirements.{model_code}-code-completion")
+
+                    bash_commands.append(f"sed -i 's/<MODELNAME>/{model_code_original_mod}/g' {model_code}-code-completion.py")
+                    bash_commands.append(f"sed -i 's/<MODELVERSION>/{model_version_code_input}/g' {model_code}-code-completion.py")
+                
+                    bash_commands.append(f"paradigm launch --steps {model_code}-code-completion")
+                    bash_commands.append(f"paradigm deploy --deployment {model_code}-code-completion --deployment_port 8000 --deployment_memory {int(memory_requested)}Gi")
+
+                    with open('latest_instructions.sh', 'w') as f:
+                        for item in bash_commands:
+                            f.write(f"{item}\n")
+                    
+                    run_script("latest_instructions.sh")
+                    # deployment_name = logs.split('deployment.apps/')[1].split(' ')[0]
+                    # print(f"***Deployment found - {deployment_name}")
+
+        elif model_version_code == 'Finetuned':
+            with st.spinner('Unleashing the agents..'):
+                bash_commands = []
+                bash_commands.append("rm -r last-deployed-scripts")
+                bash_commands.append("mkdir last-deployed-scripts")
+                bash_commands.append("cp code-completion-utils/general-code-completion.py last-deployed-scripts/general-code-completion.py")
+                bash_commands.append("cp code-completion-utils/requirements.general-code-completion last-deployed-scripts/requirements.general-code-completion")
+
+                bash_commands.append("cd last-deployed-scripts")
+                bash_commands.append(f"mv general-code-completion.py {model_code}-code-completion.py")
+                bash_commands.append(f"mv requirements.general-code-completion requirements.{model_code}-code-completion")
+
+                bash_commands.append(f"sed -i 's/<MODELNAME>/{model_code_original_mod}/g' {model_code}-code-completion.py")
+                bash_commands.append(f"sed -i 's/<MODELVERSION>/{model_version_code_input}/g' {model_code}-code-completion.py")
+            
+                bash_commands.append(f"paradigm launch --steps {model_code}-code-completion")
+                bash_commands.append(f"paradigm deploy --deployment {model_code}-code-completion --deployment_port 8000 --deployment_memory {int(memory_requested)}Gi")
+
+                with open('latest_instructions.sh', 'w') as f:
+                    for item in bash_commands:
+                        f.write(f"{item}\n")
+                
+                run_script("latest_instructions.sh")
