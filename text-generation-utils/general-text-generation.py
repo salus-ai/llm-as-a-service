@@ -52,7 +52,21 @@ local_dir = 'model_dir'
 download_directory_from_s3(bucket_name, s3_folder, local_dir)
 print("Downloaded model to local directory")
 
-app = FastAPI()
+description = """
+Salus LLM-as-a-Service 🚀
+
+A Scalable API for any open-source or proprietary LLM
+"""
+
+app = FastAPI(
+    title="Salus",
+    description=description,
+    version="0.2.0",
+    license_info={
+        "name": "Apache 2.0",
+        "url": "https://www.apache.org/licenses/LICENSE-2.0.html",
+    },
+    )
 
 # Add CORS middleware
 app.add_middleware(
