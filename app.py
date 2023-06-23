@@ -63,7 +63,7 @@ st.title("LLM as a Service ☁️🚀")
 with st.expander("Text Generation"):
     model_tg_original = st.selectbox(
     'Choose Model',
-    ('EleutherAI/pythia-12b', 'EleutherAI/pythia-70m'),
+    ('EleutherAI/pythia-12b', 'EleutherAI/pythia-70m', 'tiiuae/falcon-40b', 'tiiuae/falcon-7b'),
     key="tg-model")
 
     model_tg_original_mod = model_tg_original.replace("/", "\/" )
