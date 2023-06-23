@@ -91,7 +91,7 @@ text_generator = None
 
 def load_model():
     global model, tokenizer, text_generator
-    model = AutoModelForCausalLM.from_pretrained(local_dir)
+    model = AutoModelForCausalLM.from_pretrained(local_dir, trust_remote_code=True)
 
     tokenizer = AutoTokenizer.from_pretrained(local_dir)
 

@@ -17,7 +17,8 @@ print(f"model dir - {model_dir}")
 # Load and save the model and tokenizer
 
 model = AutoModelForCausalLM.from_pretrained(
-  "<MODELNAME>"
+  "<MODELNAME>",
+  trust_remote_code=True
 )
 
 tokenizer = AutoTokenizer.from_pretrained(
