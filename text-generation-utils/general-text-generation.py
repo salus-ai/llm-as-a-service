@@ -107,7 +107,7 @@ def load_model():
         print("Pipeline is set to run on CPU")
 
     # Create the text generation pipeline using the local model and tokenizer
-    text_generator = pipeline("text-generation", model=model, tokenizer=tokenizer, device=device)
+    # text_generator = pipeline("text-generation", model=model, tokenizer=tokenizer, device=device)
 
 def extract_text_from_pdf(file_path):
     pdf_file_obj = open(file_path, 'rb')
@@ -209,15 +209,35 @@ async def generate_text(input_data: TextGenerationInput):
     if model is None or tokenizer is None or text_generator is None:
         raise HTTPException(status_code=503, detail="Model is not loaded yet")
 
-    if len(input_data.text) > 1000:  # Adjust this limit as needed
-        raise HTTPException(status_code=400, detail="Input text is too long")
+    # if len(input_data.text) > 1000:  # Adjust this limit as needed
+    #     raise HTTPException(status_code=400, detail="Input text is too long")
 
     try:
-        generated_text = text_generator(input_data.text, max_length=100)
+        # generated_text = text_generator(input_data.text, max_length=100)
+        # if 'OpenAssistant' in '<MODELNAME>':
+        #     modified_input = f"<|prompter|>{input_data.text}<|endoftext|><|assistant|>"
+        # else:
+        #     modified_input = input_data.text
+
+        modified_input = input_data.text
+
+        input_ids = tokenizer.encode(modified_input, return_tensors="pt").to(device_general)
+
+        if device_general == 'cuda':
+            with torch.cuda.amp.autocast():
+                output = model.generate(input_ids, max_length=100, do_sample=True, early_stopping=True, eos_token_id=model.config.eos_token_id, num_return_sequences=1)
+        else:
+            output = model.generate(input_ids, max_length=100, do_sample=True, early_stopping=True, eos_token_id=model.config.eos_token_id, num_return_sequences=1)
+
+        output = output.to('cpu')
+
+        output_text = tokenizer.decode(output[0], skip_special_tokens=False)
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-    return {"generated_text": generated_text[0]['generated_text']}
+    # return {"generated_text": generated_text[0]['generated_text']}
+    return {"generated_text": output_text}
 
 @app.post("/fine_tune/")
 async def fine_tune_model(background_tasks: BackgroundTasks, input_data: FineTuneInput):
