@@ -17,7 +17,7 @@ Also, make sure [Docker](https://docs.docker.com/engine/install/) is installed a
 In a terminal with the above kubectl access, follow the below steps.
 
 - (Recommended) Create a new Python environment with your preferred environment manager
-- Clone the repo 
+- Clone this repo 
     - `git clone https://github.com/ParadigmAI/paradigm.git`
 - Go into the directory 
     - `cd paradigm`
@@ -28,14 +28,9 @@ In a terminal with the above kubectl access, follow the below steps.
 - Validate if paradigm was properly installed
     - `paradigm --help`
 
-### Set up llm-as-a-service 
+### Run the UI
 
-- Clone the repo 
-    - `git clone https://github.com/salus-ai/llm-as-a-service.git`
-
-- Run the UI
-
-    - Install the dependecies in your Python environment by running `pip install -r requirements.txt`
+Install the dependecies in your Python environment by running `pip install -r requirements.txt`
 
 ```
 streamlit run app.py
