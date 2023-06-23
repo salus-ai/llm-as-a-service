@@ -206,7 +206,8 @@ def hello_world():
 
 @app.post("/generate/")
 async def generate_text(input_data: TextGenerationInput):
-    if model is None or tokenizer is None or text_generator is None:
+    # if model is None or tokenizer is None or text_generator is None:
+    if model is None or tokenizer is None:
         raise HTTPException(status_code=503, detail="Model is not loaded yet")
 
     # if len(input_data.text) > 1000:  # Adjust this limit as needed
