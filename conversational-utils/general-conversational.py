@@ -152,6 +152,7 @@ async def generate_text(input_data: TextGenerationInput):
         output = output.to('cpu')
 
         output_text = tokenizer.decode(output[0], skip_special_tokens=False)
+        print(f"Output successfully generated - {output_text}")
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
